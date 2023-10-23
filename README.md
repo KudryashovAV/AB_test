@@ -1,3 +1,16 @@
+# Application description
+
+## API description
+
+ - Request to `https://analyricexperimentsapp.onrender.com/api/analytic_experiments` has to have  HTTP header `Device-Token`. In other case api for this request will return `{"error":"'Device-Token' header value is empty!"}` message and Bad Request status (400).   
+   Request with header will return all available for sent token A/B experiment variants. All tokens will take part in testing only in younger tests than token. If a token was saved by system 3 day ago, it won't be taken part in test created today, but will take part in test created 4 days ago.
+
+## Admin part description
+
+ - Go to the `https://analyricexperimentsapp.onrender.com/admin/analytic_experiments` or to the just `https://analyricexperimentsapp.onrender.com/` for checking the list of all analytic experiments. Each experiment in this list has the link  to the detail page. On this page you can see all options of experiment: name of experiment, available variants, device count in each variant, device count in hole experiment, limits for each variant and current filling percentage. 
+
+---
+
 # Test task
 
 We create mobile applications and sometimes we have to run AB-tests to test hypotheses. To do this, we need a system that is a simple REST API consisting of a single endpoint.
