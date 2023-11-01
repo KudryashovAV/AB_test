@@ -9,6 +9,38 @@ describe Api::AnalyticExperimentsController, type: :controller do
     end
   end
 
+  context "with many customers" do
+    let!(:seed) do
+      price_analytic_experiment = AnalyticExperiment.create(key: "price")
+      button_color_analytic_experiment = AnalyticExperiment.create(key: "button_color")
+      ExperimentOption.create([
+        { analytic_experiment: price_analytic_experiment, experiment_name: price_analytic_experiment.key, name: "50", limit_percentage: 5 },
+        { analytic_experiment: price_analytic_experiment, experiment_name: price_analytic_experiment.key, name: "20", limit_percentage: 10 },
+        { analytic_experiment: price_analytic_experiment, experiment_name: price_analytic_experiment.key, name: "10", limit_percentage: 75 },
+        { analytic_experiment: price_analytic_experiment, experiment_name: price_analytic_experiment.key, name: "5", limit_percentage: 10 },
+        { analytic_experiment: button_color_analytic_experiment, experiment_name: button_color_analytic_experiment.key, name: "#FF0000", limit_percentage: 33.3 },
+        { analytic_experiment: button_color_analytic_experiment, experiment_name: button_color_analytic_experiment.key, name: "#00FF00", limit_percentage: 33.3 },
+        { analytic_experiment: button_color_analytic_experiment, experiment_name: button_color_analytic_experiment.key, name: "#0000FF", limit_percentage: 33.3 }
+      ])
+    end
+
+    it "creates corresponding count of price values" do
+      settings = Parallel.map((1..100).to_a, :in_ractor => 8) do |i|
+        request.headers.merge!("Device-Token" => SecureRandom.uuid); get :index; JSON.parse(response.body)
+      end
+      result = settings.group_by{|resp| resp.detect{|exp| exp["key"] == "price"}["value"]}.transform_values(&:size)
+      expect(result).to be_eql({"10"=> 75, "20" => 10, "50" => 5, "5"=> 10})
+    end
+
+    it "creates corresponding count of button_color values" do
+      settings = Parallel.map((1..99).to_a, :in_ractor => 8) do
+        request.headers.merge!("Device-Token" => SecureRandom.uuid); get :index; JSON.parse(response.body)
+      end
+      result = settings.group_by{|resp| resp.detect{|exp| exp["key"] == "button_color"}["value"]}.transform_values(&:size)
+      expect(result).to be_eql({'#FF0000'=> 33, '#00FF00' => 33, '#0000FF' => 33})
+    end
+  end
+
   context "valid request" do
     let!(:eo1) { create :experiment_option,
                        analytic_experiment: ae2,

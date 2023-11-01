@@ -9,15 +9,16 @@ RSpec.configure do |config|
     expectations.include_chain_clauses_in_custom_matcher_descriptions = true
   end
 
-  config.before(:suite) do
+  config.before(:each) do
     ActiveRecord::Base.establish_connection(Rails.env.to_sym)
-    DatabaseCleaner[:active_record, db: :analytic_experiment_test].clean_with(:truncation)
+    DatabaseCleaner[:active_record, db: :analytic_experiment_test].clean_with(:deletion)
   end
 
   config.before(:each) do
-    DatabaseCleaner.strategy = :transaction
+    DatabaseCleaner.strategy = :deletion
     DatabaseCleaner.start
   end
+
   config.after(:each) do
     DatabaseCleaner[:active_record, db: :analytic_experiment_test].clean
   end

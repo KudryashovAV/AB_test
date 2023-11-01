@@ -19,7 +19,7 @@ class ExperimentProcessor
         end
       end
 
-      token.reload.experiment_options
+      token.reload.experiment_options.sort
     end
 
     private
