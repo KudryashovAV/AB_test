@@ -17,6 +17,7 @@ gem "bootsnap", require: false
 gem "factory_bot_rails"
 
 group :development, :test do
+  gem "parallel"
   gem "debug"
   gem "rspec-rails"
 end
