@@ -25,7 +25,7 @@ describe Api::AnalyticExperimentsController, type: :controller do
     end
 
     it "creates corresponding count of price values" do
-      settings = Parallel.map((1..100).to_a, :in_ractor => 8) do |i|
+      settings = Parallel.map((1..100).to_a, :in_ractor => 8) do |i| #I couldn't find option `in_ractor` in docs, perhaps `in_ractors`? I've checked in this wariant and in `in_processes` variant.
         request.headers.merge!("Device-Token" => SecureRandom.uuid); get :index; JSON.parse(response.body)
       end
       result = settings.group_by{|resp| resp.detect{|exp| exp["key"] == "price"}["value"]}.transform_values(&:size)
