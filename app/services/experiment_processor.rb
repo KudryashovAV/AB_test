@@ -7,15 +7,16 @@ class ExperimentProcessor
       ExperimentFetcher.fetch_unused(existed_experiment_ids, token.created_at).each do |experiment|
         experiment_options = ExperimentOptionFetcher.fetch_by_experiment_id(experiment.id)
 
-        option_for_token = experiment_options.select(&:open_for_addition)
-                                             .sort_by(&:id)
-                                             .min_by { |op| op.filling_percentage }
-        next unless option_for_token
-
         ActiveRecord::Base.transaction do
-          experiment_option_updater(experiment_options, option_for_token.id)
-          token.device_experiment_options.create(experiment_option: option_for_token)
-          token.device_experiments.create(analytic_experiment: experiment)
+          option_for_token = experiment_options.select(&:open_for_addition)
+                                               .sort_by(&:id)
+                                               .min_by { |op| op.filling_percentage }
+          
+          if option_for_token
+            experiment_option_updater(experiment_options, option_for_token.id)
+            token.device_experiment_options.create(experiment_option: option_for_token)
+            token.device_experiments.create(analytic_experiment: experiment)
+          end
         end
       end
 
